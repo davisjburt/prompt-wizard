@@ -1,0 +1,31 @@
+# Prompt Wizard configuration
+
+# Push-to-talk key: hold to record, release to process.
+# Use a key name ("f9", "caps lock") or a scan code number from tools/detect_key.py
+hotkey: f9
+
+# Optional second hotkey: raw dictation, skips the Ollama rewrite. Set to null to disable.
+raw_hotkey: f10
+
+# Optional toggle hotkey: tap to start recording, tap again to stop.
+# For mic/Copilot buttons that fire a full key combo instead of holding.
+# Suppressed so Copilot/Start don't open. Set to null to disable.
+toggle_hotkey: windows+c
+
+# What to do with the result: paste (auto-paste at cursor) or copy (clipboard only)
+output: paste
+
+# Minimum recording length in seconds (ignore accidental taps)
+min_duration: 0.5
+
+whisper:
+  model: small.en        # tiny.en / base.en / small.en / medium.en
+  device: auto           # auto = try GPU, fall back to CPU
+
+ollama:
+  url: http://localhost:11434
+  model: qwen2.5:7b-instruct
+  keep_alive: 30m        # keep model loaded in VRAM between uses
+  temperature: 0.3
+
+sounds: true             # beep cues for record start/stop/done
