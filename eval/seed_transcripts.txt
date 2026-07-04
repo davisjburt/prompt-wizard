@@ -1,0 +1,10 @@
+# Spoken-style test transcripts for evaluating the rewriter.
+# One per line; lines starting with # are ignored.
+uh okay so I want you to look at my python script and like there's this bug where when I pass in a list it sometimes crashes, I think it's something with empty lists maybe? fix it and also can you add some tests
+so basically I need an email to my landlord about the like broken heater it's been out for um three days now and I already texted him twice, keep it polite but firm and mention the lease says repairs happen within 48 hours
+okay can you um refactor the user service, it's gotten way too big, like split out the auth stuff into its own module and uh make sure the tests still pass, oh and don't change the public API because other teams use it
+I'm trying to decide between Postgres and Mongo for this new project, it's mostly relational data, users orders products that kind of thing, but some of it is like flexible metadata, give me a recommendation with reasons
+write me a summary of this document but like keep it short, three bullets max, and make it something I could paste into Slack for my team, casual tone
+so the deploy failed again last night and the logs say something about a timeout connecting to redis, um can you look at the retry logic in the worker and figure out why it doesn't reconnect, maybe add some backoff
+hey I need a regex that matches like version strings you know the semver kind, major dot minor dot patch, and optionally a dash prerelease tag after, and can you explain it too because regex confuses me
+make this landing page copy better, it's for a budgeting app aimed at college students, right now it sounds too corporate, I want it fun but still trustworthy, and keep the headline under ten words

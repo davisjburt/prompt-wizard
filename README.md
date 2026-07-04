@@ -37,6 +37,24 @@ Run `.venv\Scripts\python.exe tools\detect_key.py`, press the key once, and note
 `name` / `scan_code` it prints. Put either value in `config.yaml` as `hotkey`
 (scan codes go in as plain numbers, no quotes).
 
+## Evaluating & improving the rewriter
+
+Every dictation is recorded to `logs\history.jsonl`. Two tools use it (both grade
+with the same Ollama model that does the rewriting):
+
+- `.venv\Scripts\python.exe tools\evaluate.py` — grades every real dictation plus
+  the seed set in [eval/seed_transcripts.txt](eval/seed_transcripts.txt) on five
+  criteria (intent, no invention, clarity, structure, conciseness). Writes
+  `eval\report.md` with per-pair grades and issues.
+- `.venv\Scripts\python.exe tools\optimize.py --iterations 3` — the improvement
+  loop: grades the current prompt, feeds the worst examples back to the model to
+  propose a better system prompt, re-measures, and adopts a candidate only if the
+  average actually improves. The old prompt is backed up to `prompts\archive\`.
+  Restart the app afterwards to pick up the new prompt.
+
+The more you dictate, the more real data these tools grade against — add tricky
+cases you hit in daily use to the seed file to lock them in as regression tests.
+
 ## Requirements
 
 - Windows, Python 3.12 venv in `.venv` (`pip install -r requirements.txt`)

@@ -1,3 +1,4 @@
+import json
 import sys
 import threading
 import time
@@ -20,6 +21,7 @@ if sys.stdout:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 LOG_FILE = ROOT / "logs" / "prompt-wizard.log"
+HISTORY_FILE = ROOT / "logs" / "history.jsonl"
 
 
 def log(msg: str):
@@ -119,6 +121,12 @@ class PromptWizard:
                     result = self.rewriter.rewrite(transcript)
                     t2 = time.perf_counter()
                     log(f"  Rewrote ({t2 - t1:.1f}s): {result}")
+                    with open(HISTORY_FILE, "a", encoding="utf-8") as f:
+                        f.write(json.dumps({
+                            "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
+                            "transcript": transcript,
+                            "rewrite": result,
+                        }, ensure_ascii=False) + "\n")
 
                 if self.cfg.get("output", "paste") == "paste":
                     paste_text(result)
