@@ -12,8 +12,14 @@ raw_hotkey: f10
 # Suppressed so Copilot/Start don't open. Set to null to disable.
 toggle_hotkey: windows+c
 
-# What to do with the result: paste (auto-paste at cursor) or copy (clipboard only)
+# What to do with the result:
+#   paste  — auto-paste at the cursor
+#   review — show an editable popup with Paste / Copy / Retry / Show raw
+#   copy   — clipboard only
 output: paste
+
+# Rewrite style preset: general | coding | writing (switchable from the tray menu)
+preset: general
 
 # Minimum recording length in seconds (ignore accidental taps)
 min_duration: 0.5

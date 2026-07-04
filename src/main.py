@@ -1,3 +1,4 @@
+import ctypes
 import json
 import sys
 import threading
@@ -7,9 +8,11 @@ import winsound
 import keyboard
 from PySide6.QtWidgets import QApplication
 
-from config import ROOT, load_config, load_system_prompt
+import startup
+from config import ROOT, load_config, load_system_prompt, save_preset
 from injector import copy_text, paste_text
 from recorder import SAMPLE_RATE, Recorder
+from review import ReviewWindow
 from rewriter import Rewriter, ensure_server
 from transcriber import Transcriber
 from tray import Tray
@@ -33,10 +36,12 @@ def log(msg: str):
 
 
 class PromptWizard:
-    def __init__(self, tray: Tray, bubble: Bubble):
+    def __init__(self, tray: Tray, bubble: Bubble, review: ReviewWindow):
         self.tray = tray
         self.bubble = bubble
+        self.review = review
         self.cfg = load_config()
+        self.preset = self.cfg.get("preset", "general")
         log("Prompt Wizard starting...")
 
         log(f"  Loading Whisper ({self.cfg['whisper']['model']})...")
@@ -51,7 +56,7 @@ class PromptWizard:
                 f"Ollama server is not reachable at {o['url']} and could not be started."
             )
         self.rewriter = Rewriter(
-            o["url"], o["model"], load_system_prompt(),
+            o["url"], o["model"], load_system_prompt(self.preset),
             o.get("keep_alive", "30m"), o.get("temperature", 0.3),
         )
         self.rewriter.check()
@@ -61,9 +66,27 @@ class PromptWizard:
 
         self.recorder = Recorder()
         self.bubble.set_level_source(lambda: self.recorder.level)
+        self.review.configure(self.do_paste, self.rewriter.rewrite)
         self.raw_mode = False
         self._busy = threading.Lock()
         self._toggle_armed = True
+        self._target_hwnd = 0
+
+    def set_preset(self, name: str):
+        self.preset = name
+        self.rewriter.system_prompt = load_system_prompt(name)
+        save_preset(name)
+        log(f"Preset switched to: {name}")
+
+    def do_paste(self, text: str, hwnd: int = 0):
+        """Paste into the window that was focused when recording started."""
+        def run():
+            if hwnd:
+                ctypes.windll.user32.SetForegroundWindow(hwnd)
+                time.sleep(0.15)
+            paste_text(text)
+            self.beep(1320)
+        threading.Thread(target=run, daemon=True).start()
 
     def beep(self, freq: int, ms: int = 120):
         if self.cfg.get("sounds", True):
@@ -73,6 +96,7 @@ class PromptWizard:
         if self.recorder.recording or self._busy.locked():
             return
         self.raw_mode = raw
+        self._target_hwnd = ctypes.windll.user32.GetForegroundWindow()
         try:
             self.recorder.start()
         except Exception as e:
@@ -128,13 +152,18 @@ class PromptWizard:
                             "rewrite": result,
                         }, ensure_ascii=False) + "\n")
 
-                if self.cfg.get("output", "paste") == "paste":
+                output = self.cfg.get("output", "paste")
+                if output == "review" and not raw:
+                    self.bubble.set_state("hidden")
+                    self.review.show_review(transcript, result, self._target_hwnd)
+                elif output == "paste":
                     paste_text(result)
                     self.bubble.set_state("done", "Pasted")
+                    self.beep(1320)
                 else:
                     copy_text(result)
                     self.bubble.set_state("done", "Copied")
-                self.beep(1320)
+                    self.beep(1320)
                 log(f"  Done in {time.perf_counter() - t0:.1f}s total")
             except Exception as e:
                 log(f"  ERROR: {e}")
@@ -194,11 +223,18 @@ def main():
 
     tray = Tray(on_quit=app.quit)
     bubble = Bubble()
+    review = ReviewWindow()
 
     def start_logic():
         try:
-            wizard = PromptWizard(tray, bubble)
+            wizard = PromptWizard(tray, bubble, review)
             wizard.register_hotkeys()
+            tray.attach({
+                "preset": wizard.preset,
+                "set_preset": wizard.set_preset,
+                "startup_enabled": startup.is_enabled,
+                "set_startup": startup.set_enabled,
+            })
             tray.set_state("idle")
         except Exception as e:
             log(f"STARTUP FAILED: {e}")

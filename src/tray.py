@@ -1,10 +1,10 @@
 import os
 
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtGui import QAction, QColor, QIcon, QPainter, QPixmap
+from PySide6.QtGui import QAction, QActionGroup, QColor, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import QMenu, QSystemTrayIcon
 
-from config import ROOT
+from config import PRESETS, ROOT
 
 STATE_COLORS = {
     "loading": QColor(200, 180, 60),
@@ -40,6 +40,7 @@ class Tray(QObject):
 
     _stateSig = Signal(str)
     _notifySig = Signal(str)
+    _attachSig = Signal(object)
 
     def __init__(self, on_quit):
         super().__init__()
@@ -56,7 +57,7 @@ class Tray(QObject):
             action = QAction(label, self._menu)
             action.triggered.connect(lambda _=False, t=target: os.startfile(t))
             self._menu.addAction(action)
-        self._menu.addSeparator()
+        self._sep = self._menu.addSeparator()
         quit_action = QAction("Quit", self._menu)
         quit_action.triggered.connect(on_quit)
         self._menu.addAction(quit_action)
@@ -64,7 +65,36 @@ class Tray(QObject):
 
         self._stateSig.connect(self._apply_state)
         self._notifySig.connect(self._show_message)
+        self._attachSig.connect(self._apply_attach)
         self.icon.show()
+
+    def attach(self, controls: dict):
+        """Add wizard-dependent menu items once the app has finished loading.
+
+        controls: {"preset": str, "set_preset": fn(name),
+                   "startup_enabled": fn() -> bool, "set_startup": fn(bool)}
+        Thread-safe.
+        """
+        self._attachSig.emit(controls)
+
+    def _apply_attach(self, c: dict):
+        preset_menu = QMenu("Style preset", self._menu)
+        group = QActionGroup(preset_menu)
+        group.setExclusive(True)
+        for name in PRESETS:
+            action = QAction(name.capitalize(), preset_menu)
+            action.setCheckable(True)
+            action.setChecked(name == c["preset"])
+            action.triggered.connect(lambda _=False, n=name: c["set_preset"](n))
+            group.addAction(action)
+            preset_menu.addAction(action)
+        self._menu.insertMenu(self._sep, preset_menu)
+
+        startup_action = QAction("Start with Windows", self._menu)
+        startup_action.setCheckable(True)
+        startup_action.setChecked(c["startup_enabled"]())
+        startup_action.triggered.connect(lambda checked: c["set_startup"](checked))
+        self._menu.insertAction(self._sep, startup_action)
 
     def set_state(self, state: str):
         self._stateSig.emit(state)

@@ -15,8 +15,14 @@ waveform of your voice — it shows Listening → Polishing → Pasted, then fad
 It never takes focus, so your text lands where your cursor was.
 
 The tray icon shows state: yellow = loading, blue = idle, red = recording,
-orange = processing. Right-click it to open the config, edit the rewrite prompt,
-view the log, or quit. If Ollama isn't running, the app starts it automatically.
+orange = processing. Right-click it for: style preset (General / Coding / Writing),
+Start with Windows, open config, edit the rewrite prompt, view the log, quit.
+If Ollama isn't running, the app starts it automatically.
+
+Set `output: review` in config.yaml to get an editable popup before anything is
+pasted — tweak the prompt, hit Ctrl+Enter (or Paste) and it lands in the window
+you were dictating into. Retry regenerates; Show raw swaps in the literal
+transcript; Esc dismisses.
 
 - Tap the **mic/Copilot button** to start recording, tap again to stop → rewritten
   prompt pastes into the focused window (the button sends Win+C, which is intercepted
