@@ -10,6 +10,10 @@ cursor. Fully local: audio and text never leave your machine.
   Activity is logged to `logs\prompt-wizard.log`.
 - **`run.bat`** — same thing with a console window showing live transcripts.
 
+While dictating, a small glassy speech bubble floats above the taskbar with a live
+waveform of your voice — it shows Listening → Polishing → Pasted, then fades away.
+It never takes focus, so your text lands where your cursor was.
+
 The tray icon shows state: yellow = loading, blue = idle, red = recording,
 orange = processing. Right-click it to open the config, edit the rewrite prompt,
 view the log, or quit. If Ollama isn't running, the app starts it automatically.

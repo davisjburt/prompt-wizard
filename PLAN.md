@@ -184,4 +184,5 @@ GPU makes this feel magical; CPU-only makes it feel sluggish but usable with 3B 
 - ✅ UTF-8 console fix (Whisper output can contain non-cp1252 characters)
 - ⬜ Live voice test by the user (transcription + rewrite quality)
 - ✅ Phase 2: tray icon with state colors + menu (config / rewrite prompt / log / quit), file logging, windowless launch via `run_hidden.vbs`, Ollama auto-start, graceful error notifications
-- ⬜ Phase 3 (review popup, style presets, start-with-Windows, packaging)
+- ✅ Glassy bubble UI (Wispr Flow style): frameless translucent pill with speech-bubble tail above the taskbar, live mic-level waveform, state dot + label (Listening / Polishing / Pasted / Error), fade in/out, never steals focus. Frontend moved from pystray to PySide6 (Qt) — tray is now QSystemTrayIcon, models load in a background thread so the tray appears instantly.
+- ⬜ Phase 3 remaining (review popup, style presets, start-with-Windows, packaging)
